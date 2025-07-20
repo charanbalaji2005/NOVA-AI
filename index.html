@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nova Chatbot</title>
+  <link rel="icon" type="image/png" href="image.png"/>
+  <link rel="stylesheet" href="styles.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" id="highlight-dark-theme">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-light.min.css" id="highlight-light-theme" disabled>
+</head>
+<body>
+  <canvas id="bg-canvas"></canvas>
+
+  <div class="chatbot-container">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">Nova AI</div>
+        <button id="sidebar-close-btn"><i class="fas fa-times"></i></button>
+      </div>
+      <button class="new-chat-btn">
+        <span>New Chat</span>
+        <i class="fas fa-pen-to-square"></i>
+      </button>
+
+      <div class="chat-history" id="chat-history-container"></div>
+
+    <!-- QR Button -->
+<div class="sidebar-qr-section" id="qr-btn">
+  <div class="qr-icon"><i class="fas fa-qrcode"></i></div>
+  <span>Share Chat</span>
+</div>
+
+<!-- QR Popup -->
+<div id="qr-popup" class="qr-popup hidden">
+  <a href="https://charanbalaji2005.github.io/NOVA-AI/" target="_blank" download>
+    <img src="Nova AI.png" alt="QR Code" id="qr-code-img">
+  </a>
+  <p>Scan to share this chat</p>
+</div>
+
+
+      <div class="sidebar-footer">
+        <div id="profile-menu" class="profile-menu">
+          <a href="#" id="new-chat-menu-btn"><i class="fas fa-plus-circle"></i> New Chat</a>
+          <a href="#" id="clear-history-btn"><i class="fas fa-trash-alt"></i> Clear History</a>
+          <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+        <div class="profile-section" id="profile-section-clickable">
+          <div class="profile-avatar">N</div>
+          <span>My Profile</span>
+        </div>
+      </div>
+    </aside>
+
+    <main class="chat-area">
+      <div class="chat-header">
+        <button id="sidebar-toggle-btn">
+          <span class="hamburger-top"></span>
+          <span class="hamburger-middle"></span>
+          <span class="hamburger-bottom"></span>
+        </button>
+
+        <a href="index.html" class="brand-logo" style="display: flex; align-items: center; gap: 8px; text-decoration: none; color: inherit; cursor: pointer; transition: opacity 0.2s ease;">
+          <img src="ai.png" alt="Nova AI Logo" style="height: 32px; width: 32px; object-fit: contain;">
+          <span class="brand-name" style="font-size: 1.2rem; font-weight: 600;">Nova AI</span>
+        </a>
+
+        <div class="header-actions">
+          <button id="settings-btn" class="header-btn">
+            <i class="fas fa-cog"></i>
+          </button>
+          <div id="settings-menu" class="settings-menu">
+            <a id="summarize-menu-btn"><i class="fas fa-file-alt"></i> Summarize Chat</a>
+            <div class="theme-toggle-menu-item">
+              <span><i class="fas fa-palette"></i> Theme</span>
+              <label class="theme-switch">
+                <input type="checkbox" id="theme-toggle-checkbox">
+                <span class="slider round"></span>
+              </label>
+            </div>
+            <div class="theme-toggle-menu-item">
+              <span><i class="fas fa-volume-up"></i> Voice</span>
+              <label class="theme-switch">
+                <input type="checkbox" id="voice-toggle-checkbox">
+                <span class="slider round"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-content chat-padding" id="chat-content"></div>
+
+      <div class="chat-input-and-footer">
+        <div class="chat-input-area">
+          <div class="input-wrapper">
+            <div id="image-preview-container" class="image-preview-container hidden"></div>
+            <div class="input-container">
+              <textarea id="chat-input" class="chat-input" placeholder="Message DeepSeek..." rows="1"></textarea>
+              <div class="input-buttons">
+                <button id="upload-btn" title="Upload Image"><i class="fas fa-paperclip"></i></button>
+                <input type="file" id="image-upload-input" accept="image/*" class="hidden">
+                <button id="suggest-btn" class="suggest-btn" title="Suggest Reply">✨</button>
+                <button id="send-btn" class="send-btn" disabled><i class="fas fa-arrow-up"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <footer class="chatbot-footer">
+          <div class="footer-content">
+            <span>&copy; <span id="footer-year"></span> Nova AI. All rights reserved.</span>
+          </div>
+        </footer>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal -->
+  <div id="context-modal" class="modal-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 1000;">
+    <div class="modal" style="background-color: var(--secondary-bg); padding: 24px; border-radius: 12px; width: 90%; max-width: 500px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border: 1px solid #ccc;">
+      <h3 id="modal-title" style="margin-bottom: 16px;">Rename Chat</h3>
+
+      <!-- RENAME VIEW -->
+      <div id="rename-view">
+        <input type="text" id="rename-input" placeholder="New chat name" style="width: 100%; padding: 10px; margin: 10px 0 20px; border-radius: 6px; border: 1px solid #ccc; background-color: #f9f9f9; color: #333; box-sizing: border-box;">
+      </div>
+
+      <div id="confirmation-view" style="display: none;"></div>
+      <div id="summary-view" class="modal-content-view" style="display: none; text-align: left; max-height: 60vh; overflow-y: auto; line-height: 1.6; margin-bottom: 20px; white-space: pre-wrap;"></div>
+      <div id="modal-toolbar-container" class="modal-toolbar" style="margin-top: 16px;"></div>
+
+      <div>
+        <button id="modal-cancel-btn" class="cancel-btn" style="padding: 10px 20px; border-radius: 6px; border: none; background-color: #eee; color: #333; cursor: pointer; margin: 0 5px; font-weight: 500;">Cancel</button>
+        <button id="modal-confirm-btn" class="confirm-btn" style="padding: 10px 20px; border-radius: 6px; border: none; background-color: #4F46E5; color: white; cursor: pointer; margin: 0 5px; font-weight: 500;">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Welcome Screen Template -->
+  <template id="welcome-screen-template">
+    <div class="welcome-screen">
+      <div class="logo"><i class="fas fa-brain"></i></div>
+      <h1>Hi, I'm Nova AI.</h1>
+      <p>Your creative and helpful collaboration partner. How can I help you today?</p>
+      <div class="suggestion-cards">
+        <div class="suggestion-card" data-prompt="Explain quantum computing in simple terms">
+          <h4>Explain quantum computing</h4>
+          <p>in simple terms</p>
+        </div>
+        <div class="suggestion-card" data-prompt="Write a python script to scrape a website">
+          <h4>Write a python script</h4>
+          <p>to scrape a website</p>
+        </div>
+        <div class="suggestion-card" data-prompt="What are the latest trends in AI?">
+          <h4>Latest AI Trends</h4>
+          <p>summarize what's new</p>
+        </div>
+        <div class="suggestion-card" data-prompt="Draft an email to my team about the new project">
+          <h4>Draft an email</h4>
+          <p>to my team about a new project</p>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
